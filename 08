@@ -1,0 +1,41 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+
+# Load and filter the Iris dataset for binary classification
+X, y = datasets.load_iris(return_X_y=True)
+X, y = X[y != 2, :2], y[y != 2]  # Use only first two features and binary classes
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train SVM classifier
+model = SVC(kernel='linear')
+model.fit(X_train, y_train)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, model.predict(X_test))
+print(f"Accuracy: {accuracy:.2f}")
+
+# Plot decision boundary
+plt.figure(figsize=(8, 6))
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.Paired, edgecolors='k')
+ax = plt.gca()
+xlim, ylim = ax.get_xlim(), ax.get_ylim()
+
+xx, yy = np.meshgrid(np.linspace(*xlim, 30), np.linspace(*ylim, 30))
+xy = np.c_[xx.ravel(), yy.ravel()]
+Z = model.decision_function(xy).reshape(xx.shape)
+
+ax.contour(xx, yy, Z, levels=[-1, 0, 1], linestyles=['--', '-', '--'], colors='k')
+ax.scatter(model.support_vectors_[:, 0], model.support_vectors_[:, 1], 
+           s=100, linewidth=1, facecolors='none', edgecolors='k')
+
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.title('SVM Binary Classifier')
+plt.tight_layout()
+plt.show()
